@@ -1,6 +1,6 @@
-# Version 2 - 
-# Completed add_new()
-# Created menu_or_exit()
+# Version 3 - 
+#Completed updated()
+#Fixed commit problem when making changes to the database.
 
 import mysql.connector
 import time
@@ -12,10 +12,10 @@ import re
 
 conn = mysql.connector.connect(
     host = "localhost",
-    user = "dba",
-    password = "adminadmin",
+    user = "cli_app",
+    password = "admin",
     database = "users_db"
-) 
+)
 
 
 #@# Create Cursor and Commit objects
@@ -31,7 +31,7 @@ commit = conn.commit()
 def add_new():
     print("You selected to add a new person.\n")    
     add_new = "INSERT INTO users(id, first_name, last_name, gender, email, username, ip_address) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    id = input("Enter id: ")
+    id = int(input("Enter id: "))
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
     email = input("Enter email: ")
@@ -40,7 +40,8 @@ def add_new():
     ip_address = input("Enter ip address: ")
     value = (id, first_name, last_name, gender, email, username, ip_address)
     cursor.execute(add_new, value)
-    commit# Commits addition
+    #commit
+    conn.commit()# Commits addition
     print("\nRows modified: " + str(cursor.rowcount))
     print("\nNew user added.")
     add_new_result = "SELECT * FROM users WHERE id=%s"
@@ -73,8 +74,27 @@ def find_id():
     
 
 def update():
-    print("You selected to update a record")
-    quit()
+    print("You selected to update an existing user.\n")    
+    
+    id = int(input("User id where changes will be made: "))
+
+    field = input("What field do you want to update?: ")
+    update = "Update users SET {} = %s WHERE id=%s".format(field)
+
+    change = input("Enter your modification here: ")
+    
+    value = (change, id)
+    cursor.execute(update, value)
+    conn.commit() # Commits addition
+    print("\nRows modified: " + str(cursor.rowcount))
+    print("\nExisting user record updated added.")
+    update_result = "SELECT * FROM users WHERE id=%s"
+    id_new = (id,)
+    cursor.execute(update_result,id_new)
+    result = cursor.fetchall()
+    for row in result:
+        print("\n" + str(row)) 
+    menu_or_exit()
 
 def delete():
     print("You selected to delete a record")
