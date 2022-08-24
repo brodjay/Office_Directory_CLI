@@ -1,2 +1,2 @@
-# crud=cli-app
+# crud-cli-app
 python-mysql
