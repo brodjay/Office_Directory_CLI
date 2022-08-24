@@ -1,11 +1,13 @@
-# Version 4 
-#Completed delete()
-#
+# Version 5
+#Additional Updates
+# Added presearch in Update
+# Added "Continue" to menu_or_exit()
+# Added try and except statements
 
+from operator import truediv
 import mysql.connector
 import time
 import os
-import re
 
 
 #@# Database - Connect to database
@@ -25,8 +27,10 @@ cursor = conn.cursor()
 #@# Menu Selection Functions
 
 def add_new():
+    resume = "add_new"
     print("You selected to add a new person.\n")    
     add_new = "INSERT INTO users(id, first_name, last_name, gender, email, username, ip_address) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+
     id = int(input("Enter id: "))
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
@@ -45,41 +49,79 @@ def add_new():
     result = cursor.fetchall()
     for row in result:
         print("\n" + str(row)) 
-    menu_or_exit()
+    menu_or_exit(resume)
 
 def find_name():
-    search= input("Enter first or last name to search: ")
+    resume = "find_name"
+
+    try:
+        search= input("Enter first or last name to search: ")
+    except:
+        print("This is not a valid response. Please try again")
+        time.sleep(2)
+        os.system('clear')
+        find_name()
+
     find = "SELECT * FROM users WHERE last_name = %s OR first_name = %s"
     value = (search,search)
     cursor.execute(find, value)
     result = cursor.fetchall()
     for row in result:
         print("\n" + str(row))
-    menu_or_exit()
+    menu_or_exit(resume)
 
 def find_id():
-    search= input("Enter id number: ")
+    resume = "find_id()"
+
+    try:
+        search= input("Enter id number: ")
+    except:
+        print("This is not a valid response. Please try again")
+        time.sleep(2)
+        os.system('clear')
+        find_id()
+    
     find = "SELECT * FROM users WHERE id = %s"
     value = (search,)
     cursor.execute(find, value)
     result = cursor.fetchall()
     for row in result:
         print("\n" + str(row) + "\n")
-    menu_or_exit()
+    menu_or_exit(resume)
     
 
 def update():
+    resume = "update"
     print("You selected to update an existing user.\n")    
     
-    id = int(input("User id where changes will be made: "))
+    isRunning = True
+    while isRunning:
+        try:
+            id = int(input("User id where changes will be made: "))
+            isRunning = False
+        except:
+            print("This is not a valid response. Please try again")
+            time.sleep(2)
+            os.system('clear')
+             
+    value = (id,)
+    search_sql = "SELECT * FROM users WHERE id = %s"
+    cursor.execute(search_sql, value)
+    result = cursor.fetchall()
+    for row in result:
+        print("\n" + str(row))
+    search = input("\nIs this the correct record? Continue with update? (y, n): ")
 
-    field = input("What field do you want to update?: ")
-    update = "Update users SET {} = %s WHERE id=%s".format(field)
+    if search == "y":
+        field = input("What field do you want to update?: ")
+    elif search == "n":
+        update()
+    update_sql = "Update users SET {} = %s WHERE id=%s".format(field)
 
     change = input("Enter your modification here: ")
     
     value = (change, id)
-    cursor.execute(update, value)
+    cursor.execute(update_sql, value)
     conn.commit() # Commits addition
     print("\nRows modified: " + str(cursor.rowcount))
     print("\nExisting user record updated.")
@@ -89,14 +131,21 @@ def update():
     result = cursor.fetchall()
     for row in result:
         print("\n" + str(row)) 
-    menu_or_exit()
+    menu_or_exit(resume)
 
 def delete():
+    resume = "delete"
     os.system('clear')
     print("You selected to delete a record")
 
     # Ask for id.
-    id = int(input("\nSearch for id: "))
+    try:
+        id = int(input("\nSearch for id: "))
+    except:
+        print("This is not a valid response. Please try again")
+        time.sleep(2)
+        os.system('clear')
+        delete()
 
     # Search for record before delete to verify.
     value = (id,)
@@ -114,7 +163,7 @@ def delete():
         conn.commit()
         print("\nRows modified: " + str(cursor.rowcount))
         print("The record has been deleted.")
-        menu_or_exit()
+        menu_or_exit(resume)
     elif search == "n":        
         delete()
     else:
@@ -126,20 +175,21 @@ def goodbye():
     quit()
 
 #@# Menu or Exit option after performing menu task.
-def menu_or_exit():
+def menu_or_exit(resume):
     try:
-        response = int(input("\nReturn to menu (1) or Exit (2)?: " ))
+        response = int(input("\nContinue (1), Return to menu (2) or Exit (3)?: " ))
     except:
         print("This is not a valid response. Please try again")
         time.sleep(2)
         os.system('clear')
         menu_or_exit()
 
-    if response == 1 or 2:
+    if response == 1 or 2 or 3:
         if response == 1:
-            print("")
-            menu_option()
+            eval(resume + "()")
         elif response== 2:
+            menu_option()
+        elif response ==3:
             goodbye()
         else:
             print("This is not a valid response. Please try again")
