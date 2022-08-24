@@ -1,6 +1,6 @@
-# Version 3 - 
-#Completed updated()
-#Fixed commit problem when making changes to the database.
+# Version 4 
+#Completed delete()
+#
 
 import mysql.connector
 import time
@@ -18,13 +18,9 @@ conn = mysql.connector.connect(
 )
 
 
-#@# Create Cursor and Commit objects
+#@# Create Cursor
 
 cursor = conn.cursor()
-commit = conn.commit()
-
-#cursor.execute("SHOW DATABASES")
-#print("Database Connection Successful")
 
 #@# Menu Selection Functions
 
@@ -40,7 +36,6 @@ def add_new():
     ip_address = input("Enter ip address: ")
     value = (id, first_name, last_name, gender, email, username, ip_address)
     cursor.execute(add_new, value)
-    #commit
     conn.commit()# Commits addition
     print("\nRows modified: " + str(cursor.rowcount))
     print("\nNew user added.")
@@ -87,7 +82,7 @@ def update():
     cursor.execute(update, value)
     conn.commit() # Commits addition
     print("\nRows modified: " + str(cursor.rowcount))
-    print("\nExisting user record updated added.")
+    print("\nExisting user record updated.")
     update_result = "SELECT * FROM users WHERE id=%s"
     id_new = (id,)
     cursor.execute(update_result,id_new)
@@ -97,9 +92,35 @@ def update():
     menu_or_exit()
 
 def delete():
+    os.system('clear')
     print("You selected to delete a record")
-    quit()
 
+    # Ask for id.
+    id = int(input("\nSearch for id: "))
+
+    # Search for record before delete to verify.
+    value = (id,)
+    search_sql = "SELECT * FROM users WHERE id = %s"
+    cursor.execute(search_sql, value)
+    result = cursor.fetchall()
+    for row in result:
+        print("\n" + str(row))
+    search = input("\nIs this the correct record? Continue with delete? (y, n): ")
+
+    # If yes delete, else restart delete().
+    if search == "y":
+        delete_sql = "DELETE FROM users WHERE id = %s"
+        cursor.execute(delete_sql, value)
+        conn.commit()
+        print("\nRows modified: " + str(cursor.rowcount))
+        print("The record has been deleted.")
+        menu_or_exit()
+    elif search == "n":        
+        delete()
+    else:
+        print("Incorrect response. Please try again.")
+        delete()
+  
 def goodbye():
     print("Closing application. Goodbye!")
     quit()
@@ -137,8 +158,14 @@ def menu_option():
     4. Update a persons information.\n
     5. Delete a person by ID.\n
     6. Quit Application\n''')
-
-    menu = int(input("Please select from the option above:  "))
+    
+    try:
+        menu = int(input("Please select from the option above:  "))
+    except:
+        print("This was incorrect. Please select the correct number.")
+        time.sleep(2)
+        menu_option()
+    
     if menu == 1:
         add_new()
     elif menu == 2:
@@ -151,10 +178,7 @@ def menu_option():
         delete()
     elif menu == 6:
         goodbye()
-    else:
-        print("This was incorrect. Please select the correct number")
-        time.sleep(3)
-        menu_option()
+   
 
 #@# Start App
 menu_option()
