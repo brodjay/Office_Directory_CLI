@@ -4,7 +4,6 @@
 # Added "Continue" to menu_or_exit()
 # Added try and except statements
 
-from operator import truediv
 import mysql.connector
 import time
 import os
@@ -200,7 +199,7 @@ def menu_or_exit(resume):
 #@# Menu Function
 def menu_option():
     print('''
-    Menu\n
+    Office Directory - Menu\n
     =============================\n
     1. Add a new name.\n
     2. Find a person by name.\n
